@@ -109,6 +109,9 @@ export const AIAdvisorView: React.FC = () => {
     };
   }, []);
 
+  // Keep handleSend ref updated to avoid stale closures in Web Speech API
+  const handleSendRef = useRef<(text: string) => Promise<void>>(null as any);
+
   // Speech Recognition (Speech-to-Text) Setup
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -116,7 +119,7 @@ export const AIAdvisorView: React.FC = () => {
       const rec = new SpeechRecognition();
       rec.continuous = false;
       rec.interimResults = false;
-      rec.lang = 'en-IN'; // Indian English, fits very well!
+      rec.lang = language === 'hi' ? 'hi-IN' : language === 'te' ? 'te-IN' : 'en-IN';
 
       rec.onstart = () => {
         setIsListening(true);
@@ -125,6 +128,8 @@ export const AIAdvisorView: React.FC = () => {
       rec.onresult = (event: any) => {
         const text = event.results[0][0].transcript;
         setInput(text);
+        // Automatically submit the voice query
+        handleSendRef.current(text);
       };
 
       rec.onend = () => {
@@ -140,6 +145,13 @@ export const AIAdvisorView: React.FC = () => {
     }
   }, []);
 
+  // Update language dynamically when app language changes
+  useEffect(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.lang = language === 'hi' ? 'hi-IN' : language === 'te' ? 'te-IN' : 'en-IN';
+    }
+  }, [language]);
+
   const handleToggleVoiceInput = () => {
     if (!recognitionRef.current) {
       alert("Speech recognition is not supported on this browser version. Use Google Chrome or Microsoft Edge for full support.");
@@ -149,6 +161,8 @@ export const AIAdvisorView: React.FC = () => {
     if (isListening) {
       recognitionRef.current.stop();
     } else {
+      // Clear input and start recording
+      setInput('');
       recognitionRef.current.start();
     }
   };
@@ -206,6 +220,8 @@ export const AIAdvisorView: React.FC = () => {
       setMessages((prev) => [...prev, errorMsg]);
     }
   };
+
+  handleSendRef.current = handleSend;
 
   const presetSuggestions = [
     "Can I invest Rs. 10000 monthly?",
@@ -377,13 +393,23 @@ export const AIAdvisorView: React.FC = () => {
               {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </button>
 
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask FinAura AI (e.g. Can I save Rs. 10000?)"
-              className="flex-1 glass-input focus:ring-cyber-green focus:border-transparent py-3.5 text-xs font-semibold"
-            />
+            <div className="flex-1 relative flex items-center">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={isListening ? "Listening... Speak now" : "Ask FinAura AI (e.g. Can I save Rs. 10000?)"}
+                className="w-full glass-input focus:ring-cyber-green focus:border-transparent py-3.5 pr-14 text-xs font-semibold"
+                disabled={isListening}
+              />
+              {isListening && (
+                <div className="absolute right-3 flex items-center gap-1">
+                  <span className="w-1.5 h-3 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0s', animationDuration: '0.6s' }} />
+                  <span className="w-1.5 h-5 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s', animationDuration: '0.6s' }} />
+                  <span className="w-1.5 h-3 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s', animationDuration: '0.6s' }} />
+                </div>
+              )}
+            </div>
 
             <button
               type="submit"

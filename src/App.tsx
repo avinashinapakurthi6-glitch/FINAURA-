@@ -53,7 +53,7 @@ const MainApp: React.FC = () => {
       case 'academy':
         return <AcademyView />;
       case 'admin':
-        return user?.isAdmin ? <AdminPortalView /> : <DashboardView />;
+        return user?.isAdmin === true ? <AdminPortalView /> : <DashboardView />;
       default:
         return <DashboardView />;
     }

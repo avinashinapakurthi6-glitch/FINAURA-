@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, 
       items: [
         { id: 'innovations', label: t('innovations'), icon: <TrendingUp className="w-[18px] h-[18px]" /> },
         { id: 'academy', label: t('learningHub'), icon: <BookOpen className="w-[18px] h-[18px]" /> },
-        ...(user?.isAdmin ? [{ id: 'admin', label: t('admin'), icon: <Settings className="w-[18px] h-[18px]" /> }] : []),
+        ...(user?.isAdmin === true ? [{ id: 'admin', label: t('admin'), icon: <Settings className="w-[18px] h-[18px]" /> }] : []),
       ]
     }
   ];
