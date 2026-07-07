@@ -6,6 +6,30 @@ import { GoogleGenAI } from "@google/genai";
 
 dotenv.config();
 
+const bankingKnowledgeContext = `
+Official Bank Schemes, Policies & Insurances Knowledge Base:
+1. Savings Account Policies:
+   - Interest rate: 4.0% per annum, credited quarterly.
+   - Minimum balance: Rs. 10,000 for Metro, Rs. 5,000 for Semi-Urban, Rs. 2,500 for Rural.
+   - Grievance Redressal: Turnaround time (TAT) is 3 working days. Customers can escalate to the Banking Ombudsman if unresolved in 30 days.
+   - DICGC Protection: All deposits are insured up to Rs. 5 Lakhs by the Deposit Insurance and Credit Guarantee Corporation.
+2. Fixed Deposit (FD) & Recurring Deposit (RD) Schemes:
+   - FD Interest Rates: 1 year (6.8% p.a.), 3 years (7.2% p.a.), 5 years Tax Saver (7.5% p.a.). Senior Citizens get an additional 0.5% premium.
+   - Premature withdrawal penalty: 1.0% deduction on the effective interest rate.
+3. Government-backed Schemes:
+   - Public Provident Fund (PPF): 7.1% interest, 15-year maturity, EEE tax status, minimum deposit Rs. 500/year.
+   - Sukanya Samriddhi Yojana (SSY): 8.2% interest for girl child, maturity after 21 years or marriage after 18, EEE tax status.
+   - National Pension System (NPS): Tier-1 account offers extra Rs. 50,000 tax deduction under Sec 80CCD(1B). Low-cost equity/debt market indexing.
+   - Senior Citizen Savings Scheme (SCSS): 8.2% interest paid quarterly, 5-year tenure.
+   - Atal Pension Yojana (APY): Guaranteed pension of Rs. 1,000 to Rs. 5,000 monthly for citizens aged 18-40.
+   - Pradhan Mantri Jan Dhan Yojana (PMJDY): Zero balance account, Rs. 10,000 overdraft limit, free Rupay debit card with Rs. 2 Lakh accident insurance.
+4. Insurance Policies:
+   - Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY): Term life insurance offering Rs. 2 Lakhs cover for Rs. 436 annual premium. Age limit 18-50.
+   - Pradhan Mantri Suraksha Bima Yojana (PMSBY): Accident insurance offering Rs. 2 Lakhs cover for Rs. 20 annual premium. Age limit 18-70.
+   - Health Insurance (Medishield): Coverage up to Rs. 10 Lakhs, cashless facility across 8,000+ hospitals. Deductibles range from Rs. 15,000.
+   - Motor Insurance (Third-Party and Comprehensive): Zero depreciation add-ons, 24/7 roadside assistance, cashless garage network.
+`;
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -68,7 +92,18 @@ async function startServer() {
         return res.status(500).json({ error: "Failed to initialize Gemini AI client." });
       }
 
+      const targetLang = params.language || 'en';
+      const langInstruction = targetLang === 'hi' 
+        ? "You must reply directly in Hindi (हिंदी). Use clear, polite Devanagari script."
+        : targetLang === 'te'
+        ? "You must reply directly in Telugu (తెలుగు). Use clear, polite Telugu script."
+        : "Reply in English.";
+
       const prompt = `You are FinAura AI, a futuristic digital wealth advisor. Use this context to answer the user's financial question. Keep the tone premium, polite, encouraging, and clear. Limit recommendations to specific practical financial options in India (SIP, Mutual Funds, PPF, Sovereign Gold Bonds).
+
+      ${langInstruction}
+
+      ${bankingKnowledgeContext}
 
       ${profileContext}
 

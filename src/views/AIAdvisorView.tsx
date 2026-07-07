@@ -63,6 +63,12 @@ export const AIAdvisorView: React.FC = () => {
   useEffect(() => {
     if (language === 'en') return;
 
+    const isAlreadyInTargetLanguage = (text: string, lang: string): boolean => {
+      if (lang === 'hi') return /[\u0900-\u097F]/.test(text); // Devanagari range
+      if (lang === 'te') return /[\u0C00-\u0C7F]/.test(text); // Telugu range
+      return false;
+    };
+
     messages.forEach((msg) => {
       if (msg.sender === 'ai') {
         const cacheKey = `${msg.id}_${language}`;
@@ -70,6 +76,18 @@ export const AIAdvisorView: React.FC = () => {
 
         const hasTranslation = translatedTexts[msg.id]?.[language];
         if (!hasTranslation) {
+          // If the message is already in the target language, bypass API call
+          if (isAlreadyInTargetLanguage(msg.text, language)) {
+            setTranslatedTexts((prev) => ({
+              ...prev,
+              [msg.id]: {
+                ...prev[msg.id],
+                [language]: msg.text
+              }
+            }));
+            return;
+          }
+
           translatingMsgsRef.current.add(cacheKey);
 
           fetch('/api/translate', {
@@ -193,7 +211,8 @@ export const AIAdvisorView: React.FC = () => {
           investments: wealthContext.investments,
           carbonScore: wealthContext.carbonScore,
           wealthHealthScore: wealthContext.wealthHealthScore,
-          emergencyFund: wealthContext.emergencyFund
+          emergencyFund: wealthContext.emergencyFund,
+          language: language
         },
         geminiApiKey
       );
