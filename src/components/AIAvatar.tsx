@@ -524,8 +524,9 @@ export const AIAvatar: React.FC<AIAvatarProps> = ({
 
     selectedVoice = findBestVoice(language, isFemale);
 
-    // If an English voice fallback is used for Hindi/Telugu, automatically transliterate to Latin
-    if (selectedVoice && selectedVoice.lang.toLowerCase().startsWith('en') && (language === 'hi' || language === 'te')) {
+    // If an English voice fallback (or no custom voice, defaulting to English) is used for Hindi/Telugu, automatically transliterate to Latin
+    const isEnglishVoice = !selectedVoice || selectedVoice.lang.toLowerCase().startsWith('en');
+    if (isEnglishVoice && (language === 'hi' || language === 'te')) {
       if (language === 'hi') {
         cleanText = transliterateDevanagariToLatin(cleanText);
       } else if (language === 'te') {

@@ -59,7 +59,102 @@ export const translations: Translations = {
 
   // Header & Navigation
   portfolioSummary: { en: 'PORTFOLIO SUMMARY', hi: 'पोर्टफोलियो सारांश', te: 'పోర్ట్‌ఫోలియో సారాంశం' },
-  welcomeBack: { en: 'Welcome back', hi: 'आपका स्वागत है', te: 'మళ్లీ స్వాగతం' }
+  welcomeBack: { en: 'Welcome back', hi: 'आपका स्वागत है', te: 'మళ్లీ స్వాగతం' },
+
+  // Dashboard Page Items
+  welcomeOwner: { en: 'Welcome back, Vikram Aditya', hi: 'आपका स्वागत है, विक्रम आदित्य', te: 'మళ్లీ స్వాగతం, విక్రమ్ ఆదిత్య' },
+  assetsGrew: { en: 'FinAura wealth advisor aggregates your accounts. Your assets grew 4.2% this week.', hi: 'फिनऑरा वेल्थ एडवाइजर आपके खातों को जोड़ता है। इस सप्ताह आपकी संपत्ति 4.2% बढ़ी।', te: 'ఫిన్‌ఆరా వెల్త్ అడ్వైజర్ మీ ఖాతాలను సమగ్రపరుస్తుంది. ఈ వారం మీ ఆస్తులు 4.2% పెరిగాయి.' },
+  level4Saver: { en: 'Level 4 Saver', hi: 'स्तर 4 बचतकर्ता', te: 'స్థాయి 4 పొదుపుదారు' },
+  moderateInvestor: { en: 'Moderate Investor', hi: 'मध्यम निवेशक', te: 'మోడరేట్ ఇన్వెస్టర్' },
+  wealthHealthAnalysis: { en: 'Wealth Health Analysis', hi: 'वित्तीय स्वास्थ्य विश्लेषण', te: 'సంపద ఆరోగ్య విశ్లేషణ' },
+  healthStatus: { en: 'Health Status', hi: 'स्वास्थ्य स्थिति', te: 'ఆరోగ్య స్థితి' },
+  suggestionsForImprovement: { en: 'Suggestions for improvement', hi: 'सुधार के सुझाव', te: 'మెరుగుదల కోసం సూచనలు' },
+  financialTrendAllocation: { en: 'Financial Trend & Allocation', hi: 'वित्तीय रुझान और आवंटन', te: 'ఆర్థిక ధోరణి & కేటాయింపు' },
+  incomeVsExpenses: { en: 'Income vs Expenses', hi: 'आय बनाम व्यय', te: 'ఆదాయం వర్సెస్ ఖర్చులు' },
+  assetAllocation: { en: 'Asset Allocation', hi: 'संपत्ति आवंटन', te: 'ఆస్తి కేటాయింపు' },
+  tenYearGrowthProjection: { en: '10-Year Growth Projection', hi: '10-वर्षीय विकास अनुमान', te: '10-సంవత్సరాల వృద్ధి అంచనా' },
+  finAuraSmartPlan: { en: 'FinAura Smart Plan', hi: 'फिनऑरा स्मार्ट योजना', te: 'ఫిన్‌ఆరా స్మార్ట్ ప్లాన్' },
+  basicSavingsPlan: { en: 'Basic Savings Plan', hi: 'बुनियादी बचत योजना', te: 'ప్రాథమిక పొదుపు ప్లాన్' },
+  recentTransactions: { en: 'Recent Transactions', hi: 'हाल के लेनदेन', te: 'ఇటీవలి లావాదేవీలు' },
+  seeAll: { en: 'See all', hi: 'सभी देखें', te: 'అన్నీ చూడు' },
+  addTransaction: { en: 'Add Transaction', hi: 'लेनदेन जोड़ें', te: 'లావాదేవీని జోడించు' },
+  income: { en: 'Income', hi: 'आय', te: 'ఆదాయం' },
+  expense: { en: 'Expense', hi: 'व्यय', te: 'ఖर्च' },
+  investment: { en: 'Investment', hi: 'निवेश', te: 'పెట్టుబడి' },
+  activeGoals: { en: 'Active Goals', hi: 'सक्रिय लक्ष्य', te: 'యాక్టివ్ లక్ష్యాలు' },
+  addGoal: { en: 'Add Goal', hi: 'लक्ष्य जोड़ें', te: 'లక్ష్యాన్ని జోడించు' },
+  target: { en: 'Target', hi: 'लक्ष्य', te: 'లక్ష్యం' },
+  saved: { en: 'Saved', hi: 'सहेज लिया', te: 'పొదుపు చేసావు' },
+  timeRemaining: { en: 'Time remaining', hi: 'शेष समय', te: 'మిగిలి ఉన్న సమయం' },
+  monthlyContributionNeeded: { en: 'Monthly contribution needed', hi: 'मासिक योगदान आवश्यक', te: 'नెలవారీ సహకారం అవసరం' },
+  joinChallenge: { en: 'Join Challenge', hi: 'चुनौती में शामिल हों', te: 'సవాలులో చేరండి' },
+  completed: { en: 'Completed', hi: 'पूरा किया गया', te: 'పూర్తయింది' },
+
+  // Goal Planner Page
+  wealthGoalPlanner: { en: 'Wealth Goal Planner', hi: 'वेल्थ लक्ष्य योजनाकार', te: 'సంపద లక్ష్య ప్రణాళికాకర్త' },
+  goalPlannerDesc: { en: 'Track, fund, and optimize your life goals with AI-guided contribution planning.', hi: 'एआई-निर्देशित योगदान योजना के साथ अपने जीवन के लक्ष्यों को ट्रैक, फंड और अनुकूलित करें।', te: 'AI-ఆధారిత సహకార ప్రణాళికతో మీ జీవిత లక్ష్యాలను ట్రాక్ చేయండి, నిధులు సమకూర్చండి మరియు ఆప్టిమైజ్ చేయండి.' },
+  activeWealthGoals: { en: 'Active Wealth Goals', hi: 'सक्रिय वेल्थ लक्ष्य', te: 'యాక్టివ్ సంపద లక్ష్యాలు' },
+  addFunds: { en: 'Add Funds', hi: 'फंड जोड़ें', te: 'నిధులు జోడించు' },
+  deleteGoal: { en: 'Delete Goal', hi: 'लक्ष्य हटाएं', te: 'లక్ష్యాన్ని తొలగించు' },
+  createNewWealthGoal: { en: 'Create New Wealth Goal', hi: 'नया वेल्थ लक्ष्य बनाएं', te: 'కొత్త సంపద లక్ష్యాన్ని సృష్టించండి' },
+  goalName: { en: 'Goal Name', hi: 'लक्ष्य का नाम', te: 'లక్ష్యం పేరు' },
+  targetAmountRs: { en: 'Target Amount (Rs.)', hi: 'लक्ष्य राशि (रुपये)', te: 'లక్ష్యం మొత్తం (రూ.)' },
+  priorityLevel: { en: 'Priority Level', hi: 'प्राथमिकता स्तर', te: 'ప్రాధాన్యత స్థాయి' },
+  high: { en: 'High', hi: 'उच्च', te: 'ఎక్కువ' },
+  medium: { en: 'Medium', hi: 'मध्यम', te: 'మధ్యస్థ' },
+  low: { en: 'Low', hi: 'कम', te: 'తక్కువ' },
+  createGoal: { en: 'Create Goal', hi: 'लक्ष्य बनाएं', te: 'लक्ष్యాన్ని సృష్టించు' },
+
+  // Risk Profiler Page
+  investorRiskProfiler: { en: 'Investor Risk Profiler', hi: 'निवेशक जोखिम प्रोफाइलर', te: 'పెట్టుబడిదారుల రిస్క్ ప్రొఫైలర్' },
+  riskProfilerDesc: { en: 'Take our quantitative assessment to determine your risk profile and optimize asset allocations.', hi: 'अपने जोखिम प्रोफाइल को निर्धारित करने और परिसंपत्ति आवंटन को अनुकूलित करने के लिए हमारा मात्रात्मक मूल्यांकन लें।', te: 'మీ రిస్క్ ప్రొఫైల్‌ను నిర్ణయించడానికి మరియు ఆస్తి కేటాయింపులను ఆప్టిమైజ్ చేయడానికి మా గుణాత్మక అంచనాను తీసుకోండి.' },
+  yourCurrentRiskProfile: { en: 'Your Current Risk Profile', hi: 'आपका वर्तमान जोखिम प्रोफाइल', te: 'మీ ప్రస్తుత రిస్క్ ప్రొఫైల్' },
+  suggestPortfolioMix: { en: 'Based on your age and income, we suggest a', hi: 'आपकी उम्र और आय के आधार पर, हम एक सुझाव देते हैं', te: 'మీ వయస్సు మరియు ఆదాయం ఆధారంగా, మేము ఒక సూచనను అందిస్తున్నాము' },
+  portfolioMix: { en: 'portfolio mix.', hi: 'पोर्टफोलियो मिश्रण।', te: 'పోర్ట్‌ఫోలియో మిశ్రమం.' },
+  recommendedAssetAllocation: { en: 'Recommended Asset Allocation', hi: 'अनुशंसित परिसंपत्ति आवंटन', te: 'సిఫార్సు చేయబడిన ఆస్తి కేటాయింపు' },
+  riskProfileAssessment: { en: 'Risk Profile Assessment', hi: 'जोखिम प्रोफाइल मूल्यांकन', te: 'రిస్క్ ప్రొఫైల్ అసెస్‌మెంట్' },
+  q1: { en: 'What is your primary investment goal?', hi: 'आपका प्राथमिक निवेश लक्ष्य क्या है?', te: 'మీ ప్రాథమిక పెట్టుబడి లక్ష్యం ఏమిటి?' },
+  q1a1: { en: 'Capital Preservation', hi: 'पूंजी संरक्षण', te: 'మూలధన పరిరక్షణ' },
+  q1a2: { en: 'Balanced Growth', hi: 'संतुलित विकास', te: 'సమతుల్య వృద్ధి' },
+  q1a3: { en: 'Maximum Capital Appreciation', hi: 'अधिकतम पूंजी वृद्धि', te: 'గరిష్ట మూలధన విలువ పెరగడం' },
+  q2: { en: 'How would you react if your portfolio fell 20% in a month?', hi: 'यदि आपका पोर्टफोलियो एक महीने में 20% गिर जाता है तो आप क्या प्रतिक्रिया देंगे?', te: 'ఒక నెలలో మీ పోర్ట్‌ఫోలియో 20% పడిపోతే మీరు ఎలా స్పందిస్తారు?' },
+  q2a1: { en: 'Sell everything to prevent further loss', hi: 'आगे के नुकसान को रोकने के लिए सब कुछ बेच दें', te: 'మరింత నష్టాన్ని నివారించడానికి అన్నింటినీ అమ్మేయండి' },
+  q2a2: { en: 'Do nothing and wait for recovery', hi: 'कुछ न करें और सुधार की प्रतीक्षा करें', te: 'ఏమీ చేయకుండా కోలుకునే వరకు వేచి ఉండండి' },
+  q2a3: { en: 'Buy more at lower prices', hi: 'कम कीमतों पर अधिक खरीदें', te: 'తక్కువ ధరల వద్ద మరింత కొనండి' },
+  q3: { en: 'What is your investment horizon?', hi: 'आपका निवेश क्षितिज क्या है?', te: 'మీ పెట్టుబడి పరిమితి ఎంత సమయం?' },
+  q3a1: { en: 'Under 2 years', hi: '2 वर्ष से कम', te: '2 సంవత్సరాల లోపు' },
+  q3a2: { en: '2 to 5 years', hi: '2 से 5 वर्ष', te: '2 నుండి 5 సంవత్సరాలు' },
+  q3a3: { en: 'Over 5 years', hi: '5 वर्ष से अधिक', te: '5 సంవత్సరాల కంటే ఎక్కువ' },
+  submitAssessment: { en: 'Submit Assessment', hi: 'मूल्यांकन जमा करें', te: 'అంచనాను సమర్పించు' },
+
+  // AI Analyzer Page
+  aiTransactionCarbonAnalyzer: { en: 'AI Transaction & Carbon Analyzer', hi: 'एआई लेनदेन और कार्बन विश्लेषक', te: 'AI లావాదేవీ & కార్బన్ విశ్లేషకుడు' },
+  aiAnalyzerDesc: { en: 'Analyze your cashflow categories, recurring subscriptions, and eco-spending scores.', hi: 'अपनी नकदी प्रवाह श्रेणियों, आवर्ती सदस्यताओं और पर्यावरण-व्यय स्कोर का विश्लेषण करें।', te: 'మీ నగదు ప్రవాహ వర్గాలు, పునరావృత సభ్యత్వాలు మరియు పర్యావరణ వ్యయ స్కోర్‌లను విశ్లేషించండి.' },
+  uploadBankingStatement: { en: 'Upload Banking Statement', hi: 'बैंकिंग स्टेटमेंट अपलोड करें', te: 'బ్యాంకింగ్ స్టేట్‌మెంట్ అప్‌లోడ్' },
+  uploadPDF: { en: 'Upload PDF', hi: 'पीडीएफ अपलोड करें', te: 'PDF అప్‌లోడ్ చేయి' },
+  carbonFootprintAnalytics: { en: 'Carbon Footprint Analytics', hi: 'कार्बन फुटप्रिंट एनालिटिक्स', te: 'కార్బన్ ఫుట్‌ప్రింట్ అనలిటిక్స్' },
+  transportation: { en: 'Transportation', hi: 'परिवहन', te: 'రవాణా' },
+  shopping: { en: 'Shopping', hi: 'खरीदारी', te: 'షాపింగ్' },
+  food: { en: 'Food', hi: 'भोजन', te: 'ఆహారం' },
+  utilities: { en: 'Utilities', hi: 'उपयोगिताएँ', te: 'యుటిలిటీస్' },
+  healthcare: { en: 'Healthcare', hi: 'स्वास्थ्य सेवा', te: 'ఆరోగ్య రక్షణ' },
+  entertainment: { en: 'Entertainment', hi: 'मनोरंजन', te: 'వినోదం' },
+  recurringSubscriptions: { en: 'Recurring Subscriptions', hi: 'आवर्ती सदस्यताएँ', te: 'పునరావృత సభ్యత్వాలు' },
+  unsubscribe: { en: 'Unsubscribe', hi: 'सदस्यता रद्द करें', te: 'సభ్యత్వాన్ని రద్దు చేయి' },
+  transactionHistory: { en: 'Transaction History', hi: 'लेनदेन का इतिहास', te: 'లావాదేవీల చరిత్ర' },
+
+  // Innovations Hub
+  innovationsSavingsHub: { en: 'Innovations & Savings Hub', hi: 'नवाचार और बचत हब', te: 'ఆవిష్కరణలు & పొదుపు కేంద్రం' },
+  innovationsDesc: { en: 'Participate in wellness challenges, optimize carbon footprint spending, and earn XP.', hi: 'कल्याण चुनौतियों में भाग लें, कार्बन फुटप्रिंट खर्च को अनुकूलित करें और XP कमाएं।', te: 'ఆరోగ్య సవాళ్లలో పాల్గొనండి, కార్బన్ ఫుట్‌ప్రింట్ వ్యయాన్ని ఆప్టిమైజ్ చేయండి మరియు XP సంపాదించండి.' },
+  ecoFootprintTracker: { en: 'Eco Footprint Tracker', hi: 'इको फुटप्रिंट ट्रैकर', te: 'ఎకో ఫుట్‌ప్రింట్ ట్రాకర్' },
+
+  // Academy Page
+  financialLiteracyAcademy: { en: 'Financial Literacy Academy', hi: 'वित्तीय साक्षरता अकादमी', te: 'ఆర్థిక అక్షరాస్యత అకాడమీ' },
+  academyDesc: { en: 'Learn the basics of smart investing, tax planning, and compound interest.', hi: 'स्मार्ट निवेश, कर योजना और चक्रवृद्धि ब्याज की मूल बातें सीखें।', te: 'స్మార్ట్ ఇన్వెస్టింగ్, టాక్స్ ప్లానింగ్ మరియు చక్రవడ్డీ ప్రాథమికాలను నేర్చుకోండి.' },
+
+  // Admin Portal
+  adminConfigPortal: { en: 'Admin & Config Portal', hi: 'प्रशासन और कॉन्फ़िगरेशन पोर्टल', te: 'అడ్మిన్ & కాన్ఫిగరేషన్ పోర్టల్' },
+  adminDesc: { en: 'Adjust security parameters, manage connection tokens, audit users, and view platform execution logs.', hi: 'सुरक्षा मापदंडों को समायोजित करें, कनेक्शन टोकन प्रबंधित करें, उपयोगकर्ताओं का ऑडिट करें और प्लेटफ़ॉर्म निष्पादन लॉग देखें।', te: 'భద్రతా పారామితులను సర్దుబాటు చేయండి, కనెక్షన్ టోకెన్లను నిర్వహించండి, వినియోగదారులను ఆడిట్ చేయండి మరియు ప్లాట్‌ఫారమ్ అమలు లాగ్‌లను వీక్షించండి.' }
 };
 
 // Global in-memory dynamic translation cache loaded from localStorage
