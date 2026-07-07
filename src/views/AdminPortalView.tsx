@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWealth } from '../context/WealthContext';
-import { Settings, Shield, Key, Eye, EyeOff, RefreshCw, Terminal, Users } from 'lucide-react';
+import { Settings, Shield, RefreshCw, Terminal, Users } from 'lucide-react';
 
 interface SystemLog {
   timestamp: string;
@@ -10,10 +10,8 @@ interface SystemLog {
 }
 
 export const AdminPortalView: React.FC = () => {
-  const { geminiApiKey, setGeminiApiKey, resetAllData } = useWealth();
+  const { resetAllData } = useWealth();
   
-  const [showKey, setShowKey] = useState(false);
-  const [keyInput, setKeyInput] = useState(geminiApiKey);
   const [logs, setLogs] = useState<SystemLog[]>([
     { timestamp: '14:30:02', module: 'AUTH_MDL', message: 'JWT verification completed for user session.', type: 'SUCCESS' },
     { timestamp: '14:30:05', module: 'WEALTH_DB', message: 'Fetched 16 transaction history blocks.', type: 'INFO' },
@@ -46,10 +44,7 @@ export const AdminPortalView: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSaveKey = () => {
-    setGeminiApiKey(keyInput);
-    alert("Gemini API Key securely updated! Real Gemini models will now query when chatting.");
-  };
+
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset all dashboard metrics and goals? This clears localStorage.")) {
@@ -83,39 +78,7 @@ export const AdminPortalView: React.FC = () => {
         {/* Left Side: Security Settings (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
           
-          {/* API Key Configure */}
-          <div className="glass-panel rounded-2xl p-6 space-y-4">
-            <h3 className="font-extrabold text-sm text-white uppercase tracking-wider flex items-center gap-2">
-              <Key className="w-4.5 h-4.5 text-cyber-gold" /> Gemini API Authentication
-            </h3>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              Input your personal Google Gemini API key to activate live generative financial responses. Leave empty to run in simulated mode.
-            </p>
 
-            <div className="flex gap-2 relative mt-2">
-              <input
-                type={showKey ? 'text' : 'password'}
-                value={keyInput}
-                onChange={(e) => setKeyInput(e.target.value)}
-                placeholder="AIzaSy..."
-                className="w-full glass-input pr-10 text-xs"
-              />
-              <button
-                type="button"
-                onClick={() => setShowKey(!showKey)}
-                className="absolute right-3 top-3.5 text-slate-500 hover:text-slate-300"
-              >
-                {showKey ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-              </button>
-            </div>
-
-            <button
-              onClick={handleSaveKey}
-              className="w-full glass-btn-primary py-2 text-xs font-bold"
-            >
-              Update AI API Token
-            </button>
-          </div>
 
           {/* Master Reset and Security Policy */}
           <div className="glass-panel rounded-2xl p-6 space-y-4">

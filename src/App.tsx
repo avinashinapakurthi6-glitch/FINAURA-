@@ -17,7 +17,7 @@ import { AdminPortalView } from './views/AdminPortalView';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MainApp: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [currentView, setView] = useState<string>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
@@ -53,7 +53,7 @@ const MainApp: React.FC = () => {
       case 'academy':
         return <AcademyView />;
       case 'admin':
-        return <AdminPortalView />;
+        return user?.isAdmin ? <AdminPortalView /> : <DashboardView />;
       default:
         return <DashboardView />;
     }

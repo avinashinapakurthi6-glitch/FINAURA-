@@ -23,6 +23,7 @@ export interface UserDetails {
   riskScore?: number;
   photoURL?: string;
   uid?: string;
+  isAdmin?: boolean;
 }
 
 interface AuthContextProps {
@@ -46,19 +47,22 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 // Helper to map Firebase user to our UserDetails
 function firebaseUserToDetails(fbUser: FirebaseUser, extra?: Partial<UserDetails>): UserDetails {
+  const email = fbUser.email || '';
+  const isAdmin = email.toLowerCase() === 'admin@finaura.ai';
   return {
-    fullName: fbUser.displayName || extra?.fullName || fbUser.email?.split('@')[0] || 'User',
+    fullName: fbUser.displayName || extra?.fullName || (isAdmin ? 'System Administrator' : fbUser.email?.split('@')[0]) || 'User',
     age: extra?.age || 30,
-    occupation: extra?.occupation || 'Professional',
+    occupation: extra?.occupation || (isAdmin ? 'System Administrator' : 'Professional'),
     annualIncome: extra?.annualIncome || 0,
     maritalStatus: extra?.maritalStatus || 'Single',
     dependents: extra?.dependents || 0,
-    email: fbUser.email || '',
+    email: email,
     mobile: fbUser.phoneNumber || extra?.mobile || '',
     riskProfile: extra?.riskProfile || 'Moderate',
     riskScore: extra?.riskScore || 55,
     photoURL: fbUser.photoURL || undefined,
     uid: fbUser.uid,
+    isAdmin: isAdmin,
   };
 }
 
@@ -103,6 +107,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(true);
       return true;
     } catch (error: any) {
+      // Auto-create admin account if it doesn't exist yet
+      if (email.toLowerCase() === 'admin@finaura.ai') {
+        try {
+          const registerResult = await createUserWithEmailAndPassword(auth, email, pass);
+          await updateProfile(registerResult.user, { displayName: 'System Administrator' });
+          const userDetails = firebaseUserToDetails(registerResult.user);
+          setUser(userDetails);
+          setFirebaseUser(registerResult.user);
+          setIsAuthenticated(true);
+          return true;
+        } catch (regError: any) {
+          if (regError.code === 'auth/email-already-in-use') {
+            // Admin already exists, so it's a wrong password error
+            throw error;
+          }
+          console.error('Failed to auto-register admin:', regError);
+        }
+      }
       console.error('Login error:', error.message);
       throw error;
     }
