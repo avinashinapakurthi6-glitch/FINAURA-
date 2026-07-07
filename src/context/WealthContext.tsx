@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
 import { useAuth } from './AuthContext';
 import {
   getUserData,
@@ -109,33 +111,61 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const uid = firebaseUser?.uid;
 
-  // Load data from Firestore when user authenticates
+  // Load and listen to data from Firestore in real-time when user authenticates
   useEffect(() => {
-    if (!uid) return;
+    if (!uid) {
+      // Signed out: reset dashboard to default fallback/mock values
+      setBalance(245000);
+      setInvestments(820000);
+      setTransactions(FALLBACK_TRANSACTIONS);
+      setGoals(FALLBACK_GOALS);
+      setChallenges(FALLBACK_CHALLENGES);
+      setStreakDays(18);
+      setBadges(['Early Adopter', 'Obsidian Saver']);
+      return;
+    }
 
-    let cancelled = false;
+    let active = true;
     setIsDataLoading(true);
+    let unsubscribeListener: (() => void) | undefined;
 
-    getUserData(uid)
-      .then((data: UserFinancialData) => {
-        if (cancelled) return;
-        setBalance(data.balance);
-        setInvestments(data.investments);
-        setTransactions(data.transactions);
-        setGoals(data.goals);
-        setChallenges(data.challenges);
-        setStreakDays(data.streakDays);
-        setBadges(data.badges);
-      })
-      .catch((err) => {
-        console.error('Failed to load user data from Firestore:', err);
-        // Keep fallback data
-      })
-      .finally(() => {
-        if (!cancelled) setIsDataLoading(false);
-      });
+    // Helper to ensure database document exists (seeds if missing) before starting the snapshot listener
+    const initRealtimeListener = async () => {
+      try {
+        await getUserData(uid);
+        if (!active) return;
 
-    return () => { cancelled = true; };
+        // Set up snapshot listener
+        unsubscribeListener = onSnapshot(doc(db, 'users', uid), (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data() as UserFinancialData;
+            setBalance(data.balance ?? 0);
+            setInvestments(data.investments ?? 0);
+            setTransactions(data.transactions ?? []);
+            setGoals(data.goals ?? []);
+            setChallenges(data.challenges ?? []);
+            setStreakDays(data.streakDays ?? 0);
+            setBadges(data.badges ?? []);
+          }
+          setIsDataLoading(false);
+        }, (error) => {
+          console.error('Firestore snapshot listener error:', error);
+          setIsDataLoading(false);
+        });
+      } catch (err) {
+        console.error('Failed to initialize user data:', err);
+        setIsDataLoading(false);
+      }
+    };
+
+    initRealtimeListener();
+
+    return () => {
+      active = false;
+      if (unsubscribeListener) {
+        unsubscribeListener();
+      }
+    };
   }, [uid]);
 
   // Persist Gemini API key to localStorage (not Firestore)
