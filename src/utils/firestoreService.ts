@@ -82,19 +82,19 @@ const SEED_GOALS: Goal[] = [
 ];
 
 const SEED_CHALLENGES: Challenge[] = [
-  { id: 'c-1', title: 'Carbon Conscious Saver', description: 'Keep transportation spending under Rs. 2,000 this month.', targetAmount: 2000, currentAmount: 800, rewardPoints: 250, isCompleted: false },
-  { id: 'c-2', title: 'Obsidian Lockbox Challenge', description: 'Save Rs. 15,000 additionally outside standard SIPs.', targetAmount: 15000, currentAmount: 15000, rewardPoints: 400, isCompleted: true },
+  { id: 'c-1', title: 'Carbon Conscious Saver', description: 'Keep transportation spending under Rs. 2,000 this month.', targetAmount: 2000, currentAmount: 0, rewardPoints: 250, isCompleted: false },
+  { id: 'c-2', title: 'Obsidian Lockbox Challenge', description: 'Save Rs. 15,000 additionally outside standard SIPs.', targetAmount: 15000, currentAmount: 0, rewardPoints: 400, isCompleted: false },
   { id: 'c-3', title: 'Unused Subscriptions Cleanup', description: 'Audit and unsubscribe from at least two unused services.', targetAmount: 2, currentAmount: 0, rewardPoints: 150, isCompleted: false },
 ];
 
 const DEFAULT_DATA: UserFinancialData = {
-  balance: 245000,
-  investments: 820000,
-  transactions: SEED_TRANSACTIONS,
-  goals: SEED_GOALS,
+  balance: 0,
+  investments: 0,
+  transactions: [],
+  goals: [],
   challenges: SEED_CHALLENGES,
-  streakDays: 18,
-  badges: ['Early Adopter', 'Obsidian Saver'],
+  streakDays: 0,
+  badges: [],
 };
 
 // ---------- Firestore Helpers ----------
