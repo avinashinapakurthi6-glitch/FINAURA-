@@ -159,9 +159,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isOpen, 
           </div>
 
           <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyber-blue-light to-cyber-green flex items-center justify-center text-obsidian-950 font-bold uppercase shadow-inner">
-              {user?.fullName.charAt(0) || 'U'}
-            </div>
+            {user?.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user.fullName}
+                className="w-10 h-10 rounded-full border-2 border-cyber-green/40 object-cover flex-shrink-0"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyber-blue-light to-cyber-green flex items-center justify-center text-obsidian-950 font-bold uppercase shadow-inner flex-shrink-0">
+                {user?.fullName?.charAt(0) || 'U'}
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <h4 className="text-sm font-bold text-slate-200 truncate">{user?.fullName || 'User'}</h4>
               <p className="text-xs text-slate-500 truncate">{user?.occupation || 'Advisor'}</p>

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useLanguage, type Language } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useWealth } from '../context/WealthContext';
-import { Bell, Moon, Sun, Globe, Menu, ShieldAlert, X, Sparkles, AlertTriangle, BadgePercent } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Bell, Moon, Sun, Globe, Menu, ShieldAlert, X, Sparkles, AlertTriangle, BadgePercent, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface HeaderProps {
@@ -13,6 +14,7 @@ export const Header: React.FC<HeaderProps> = ({ setSidebarOpen }) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { alerts, dismissAlert, balance, investments } = useWealth();
+  const { user, logout } = useAuth();
   
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -165,6 +167,29 @@ export const Header: React.FC<HeaderProps> = ({ setSidebarOpen }) => {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
+        {/* User Profile / Logout */}
+        <div className="flex items-center gap-2">
+          {user?.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt={user.fullName}
+              className="w-8 h-8 rounded-full border-2 border-cyber-green/40 object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyber-green to-cyber-gold flex items-center justify-center text-obsidian-950 font-bold text-xs">
+              {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
+            </div>
+          )}
+          <button
+            onClick={logout}
+            className="p-2 rounded-xl bg-white/5 border border-white/5 hover:bg-red-500/20 hover:border-red-500/30 text-slate-400 hover:text-red-400 cursor-pointer transition-all"
+            title="Sign Out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
 
       </div>

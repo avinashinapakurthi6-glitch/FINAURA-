@@ -1,25 +1,22 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import {
+  getUserData,
+  saveUserData,
+  addTransactionToFirestore,
+  saveGoals,
+  saveChallenges,
+  saveFinancials,
+  saveStreakAndBadges,
+  resetUserData,
+  type Transaction,
+  type Goal,
+  type Challenge,
+  type UserFinancialData,
+} from '../utils/firestoreService';
 
-export interface Transaction {
-  id: string;
-  date: string;
-  description: string;
-  category: string;
-  amount: number;
-  type: 'income' | 'expense' | 'investment';
-  isRecurring?: boolean;
-  carbonScore?: number; // 0 (bad) to 100 (excellent eco-friendly)
-}
-
-export interface Goal {
-  id: string;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  targetDate: string;
-  priority: 'High' | 'Medium' | 'Low';
-  monthlyContribution: number;
-}
+// Re-export types so existing imports from WealthContext still work
+export type { Transaction, Goal, Challenge } from '../utils/firestoreService';
 
 export interface Alert {
   id: string;
@@ -27,16 +24,6 @@ export interface Alert {
   title: string;
   message: string;
   date: string;
-}
-
-export interface Challenge {
-  id: string;
-  title: string;
-  description: string;
-  targetAmount: number;
-  currentAmount: number;
-  rewardPoints: number;
-  isCompleted: boolean;
 }
 
 interface WealthContextProps {
@@ -57,6 +44,7 @@ interface WealthContextProps {
   carbonScore: number;
   badges: string[];
   geminiApiKey: string;
+  isDataLoading: boolean;
   setGeminiApiKey: (key: string) => void;
   addGoal: (goal: Omit<Goal, 'id' | 'currentAmount' | 'monthlyContribution'>) => void;
   updateGoalAmount: (id: string, amount: number) => void;
@@ -71,8 +59,8 @@ interface WealthContextProps {
 
 const WealthContext = createContext<WealthContextProps | undefined>(undefined);
 
-// Core Mock Data
-const INITIAL_TRANSACTIONS: Transaction[] = [
+// Fallback mock data for non-Firebase users (OTP, demo)
+const FALLBACK_TRANSACTIONS: Transaction[] = [
   { id: 'tx-1', date: '2026-06-01', description: 'TechCorp Salary Credit', category: 'Salary', amount: 150000, type: 'income', carbonScore: 90 },
   { id: 'tx-2', date: '2026-06-02', description: 'HDFC SIP Mutual Fund', category: 'Investments', amount: 20000, type: 'investment', carbonScore: 95 },
   { id: 'tx-3', date: '2026-06-03', description: 'Amazon India Shopping', category: 'Shopping', amount: 8500, type: 'expense', carbonScore: 30 },
@@ -91,67 +79,86 @@ const INITIAL_TRANSACTIONS: Transaction[] = [
   { id: 'tx-16', date: '2026-06-26', description: 'Canva Pro Yearly', category: 'Entertainment', amount: 3999, type: 'expense', isRecurring: true, carbonScore: 90 },
 ];
 
-const INITIAL_GOALS: Goal[] = [
+const FALLBACK_GOALS: Goal[] = [
   { id: 'g-1', name: 'Emergency Reserve Fund', targetAmount: 300000, currentAmount: 180000, targetDate: '2026-12-31', priority: 'High', monthlyContribution: 20000 },
   { id: 'g-2', name: 'Cyberpunk EV Car', targetAmount: 1500000, currentAmount: 250000, targetDate: '2028-06-30', priority: 'Medium', monthlyContribution: 30000 },
   { id: 'g-3', name: 'Masters in AI - London', targetAmount: 2500000, currentAmount: 400000, targetDate: '2029-09-01', priority: 'High', monthlyContribution: 45000 },
 ];
 
-const INITIAL_CHALLENGES: Challenge[] = [
+const FALLBACK_CHALLENGES: Challenge[] = [
   { id: 'c-1', title: 'Carbon Conscious Saver', description: 'Keep transportation spending under Rs. 2,000 this month.', targetAmount: 2000, currentAmount: 800, rewardPoints: 250, isCompleted: false },
   { id: 'c-2', title: 'Obsidian Lockbox Challenge', description: 'Save Rs. 15,000 additionally outside standard SIPs.', targetAmount: 15000, currentAmount: 15000, rewardPoints: 400, isCompleted: true },
   { id: 'c-3', title: 'Unused Subscriptions Cleanup', description: 'Audit and unsubscribe from at least two unused services.', targetAmount: 2, currentAmount: 0, rewardPoints: 150, isCompleted: false },
 ];
 
 export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { firebaseUser, isAuthenticated } = useAuth();
 
   const [balance, setBalance] = useState<number>(245000);
   const [investments, setInvestments] = useState<number>(820000);
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem('finaura_transactions');
-    return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
-  });
-  const [goals, setGoals] = useState<Goal[]>(() => {
-    const saved = localStorage.getItem('finaura_goals');
-    return saved ? JSON.parse(saved) : INITIAL_GOALS;
-  });
-  const [challenges, setChallenges] = useState<Challenge[]>(() => {
-    const saved = localStorage.getItem('finaura_challenges');
-    return saved ? JSON.parse(saved) : INITIAL_CHALLENGES;
-  });
+  const [transactions, setTransactions] = useState<Transaction[]>(FALLBACK_TRANSACTIONS);
+  const [goals, setGoals] = useState<Goal[]>(FALLBACK_GOALS);
+  const [challenges, setChallenges] = useState<Challenge[]>(FALLBACK_CHALLENGES);
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [streakDays, setStreakDays] = useState<number>(() => {
-    const saved = localStorage.getItem('finaura_streak');
-    return saved ? parseInt(saved, 10) : 18;
-  });
+  const [streakDays, setStreakDays] = useState<number>(18);
   const [badges, setBadges] = useState<string[]>(['Early Adopter', 'Obsidian Saver']);
-  const [geminiApiKey, setGeminiApiKey] = useState<string>(() => {
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(false);
+  const [geminiApiKey, setGeminiApiKeyState] = useState<string>(() => {
     return localStorage.getItem('finaura_gemini_key') || '';
   });
 
-  // Save changes to LocalStorage
-  useEffect(() => {
-    localStorage.setItem('finaura_transactions', JSON.stringify(transactions));
-  }, [transactions]);
+  const uid = firebaseUser?.uid;
 
+  // Load data from Firestore when user authenticates
   useEffect(() => {
-    localStorage.setItem('finaura_goals', JSON.stringify(goals));
-  }, [goals]);
+    if (!uid) return;
 
-  useEffect(() => {
-    localStorage.setItem('finaura_challenges', JSON.stringify(challenges));
-  }, [challenges]);
+    let cancelled = false;
+    setIsDataLoading(true);
 
-  useEffect(() => {
-    localStorage.setItem('finaura_gemini_key', geminiApiKey);
-  }, [geminiApiKey]);
+    getUserData(uid)
+      .then((data: UserFinancialData) => {
+        if (cancelled) return;
+        setBalance(data.balance);
+        setInvestments(data.investments);
+        setTransactions(data.transactions);
+        setGoals(data.goals);
+        setChallenges(data.challenges);
+        setStreakDays(data.streakDays);
+        setBadges(data.badges);
+      })
+      .catch((err) => {
+        console.error('Failed to load user data from Firestore:', err);
+        // Keep fallback data
+      })
+      .finally(() => {
+        if (!cancelled) setIsDataLoading(false);
+      });
 
-  // Adjust financial aggregates dynamically based on transactions and user state
+    return () => { cancelled = true; };
+  }, [uid]);
+
+  // Persist Gemini API key to localStorage (not Firestore)
+  const setGeminiApiKey = useCallback((key: string) => {
+    setGeminiApiKeyState(key);
+    localStorage.setItem('finaura_gemini_key', key);
+  }, []);
+
+  // Debounced save helper
+  const persistToFirestore = useCallback(
+    (data: Partial<UserFinancialData>) => {
+      if (!uid) return;
+      saveUserData(uid, data).catch((err) =>
+        console.error('Firestore save failed:', err)
+      );
+    },
+    [uid]
+  );
+
+  // Compute stats (same logic as before)
   const salarySum = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-
   const investmentSum = transactions.filter(t => t.type === 'investment').reduce((acc, t) => acc + t.amount, 0);
 
-  // Compute stats
   const monthlyExpenses = transactions
     .filter(t => t.type === 'expense' && t.date.startsWith('2026-06'))
     .reduce((sum, t) => sum + t.amount, 0);
@@ -161,20 +168,16 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     .reduce((sum, t) => sum + t.amount, 0) - monthlyExpenses;
 
   const netWorth = balance + investments;
-
-  // Emergency Fund is the current amount inside the Emergency Reserve Fund goal
   const emergencyFund = goals.find(g => g.id === 'g-1')?.currentAmount || 180000;
 
-  // Carbon score based on transactions
-  const carbonScore = Math.round(
-    transactions.reduce((acc, curr) => acc + (curr.carbonScore || 50), 0) / transactions.length
-  );
+  const carbonScore = transactions.length > 0
+    ? Math.round(transactions.reduce((acc, curr) => acc + (curr.carbonScore || 50), 0) / transactions.length)
+    : 50;
 
   // Generate Proactive Smart Alerts dynamically
   useEffect(() => {
     const list: Alert[] = [];
-    
-    // Alert 1: Idle Money
+
     if (balance > 75000) {
       list.push({
         id: 'alt-1',
@@ -185,7 +188,6 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
     }
 
-    // Alert 2: Emergency Fund coverage
     const monthsCovered = Math.round((emergencyFund / (monthlyExpenses || 25000)) * 10) / 10;
     if (monthsCovered < 6) {
       list.push({
@@ -197,7 +199,6 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
     }
 
-    // Alert 3: Unused Subscriptions Detection
     const subscriptions = transactions.filter(t => t.isRecurring && t.category === 'Entertainment');
     if (subscriptions.length >= 3) {
       list.push({
@@ -209,7 +210,6 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
     }
 
-    // Alert 4: Carbon footprint
     if (carbonScore < 60) {
       list.push({
         id: 'alt-4',
@@ -224,17 +224,13 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [balance, emergencyFund, monthlyExpenses, transactions, carbonScore]);
 
   // Compute Wealth Health Score
-  // Max 100 points
-  // 1. Savings Ratio (Savings / Income): target 30%+ (20 points)
-  // 2. Investment Rate (Investment / Income): target 25%+ (20 points)
-  // 3. Emergency Fund (months of expenses covered): target 6+ months (20 points)
-  // 4. Goal Progress ratio (20 points)
-  // 5. Subscription count / Spending Discipline (20 points)
   const savingsRatio = Math.max(0, Math.min(1, monthlySavings / (salarySum || 150000)));
   const investmentRatio = Math.max(0, Math.min(1, investmentSum / (salarySum || 150000)));
   const emFundCoverage = Math.min(1, emergencyFund / ((monthlyExpenses || 25000) * 6));
-  const goalProgressSum = goals.reduce((acc, g) => acc + (g.currentAmount / g.targetAmount), 0) / goals.length;
-  
+  const goalProgressSum = goals.length > 0
+    ? goals.reduce((acc, g) => acc + (g.currentAmount / g.targetAmount), 0) / goals.length
+    : 0;
+
   const score = Math.round(
     (savingsRatio * 20) +
     (investmentRatio * 20) +
@@ -266,10 +262,8 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     wealthHealthSuggestions.push('Excellent financial health! Keep diversifying your portfolio with aggressive mutual funds.');
   }
 
-  // Core functions
+  // Core functions (with Firestore persistence)
   const addGoal = (newGoal: Omit<Goal, 'id' | 'currentAmount' | 'monthlyContribution'>) => {
-    // Math to calculate required monthly investment
-    // Simple straight-line calculation: Target / Months remaining
     const timeDiff = new Date(newGoal.targetDate).getTime() - new Date().getTime();
     const monthsRemaining = Math.max(1, Math.round(timeDiff / (1000 * 60 * 60 * 24 * 30.4)));
     const monthlyContribution = Math.round(newGoal.targetAmount / monthsRemaining);
@@ -280,20 +274,30 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       currentAmount: 0,
       monthlyContribution,
     };
-    setGoals((prev) => [...prev, goal]);
+    setGoals((prev) => {
+      const updated = [...prev, goal];
+      persistToFirestore({ goals: updated });
+      return updated;
+    });
   };
 
   const updateGoalAmount = (id: string, amount: number) => {
-    setGoals((prev) =>
-      prev.map((g) => {
+    setGoals((prev) => {
+      const updated = prev.map((g) => {
         if (g.id === id) {
           const newAmount = Math.min(g.targetAmount, g.currentAmount + amount);
           return { ...g, currentAmount: newAmount };
         }
         return g;
-      })
-    );
-    setBalance((prev) => prev - amount);
+      });
+      persistToFirestore({ goals: updated });
+      return updated;
+    });
+    setBalance((prev) => {
+      const newBal = prev - amount;
+      if (uid) saveFinancials(uid, newBal, investments).catch(console.error);
+      return newBal;
+    });
     // Track contribution as an investment transaction
     addTransaction({
       date: new Date().toISOString().split('T')[0],
@@ -301,12 +305,16 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       category: 'Investments',
       amount,
       type: 'investment',
-      carbonScore: 98
+      carbonScore: 98,
     });
   };
 
   const deleteGoal = (id: string) => {
-    setGoals((prev) => prev.filter((g) => g.id !== id));
+    setGoals((prev) => {
+      const updated = prev.filter((g) => g.id !== id);
+      persistToFirestore({ goals: updated });
+      return updated;
+    });
   };
 
   const addTransaction = (tx: Omit<Transaction, 'id'>) => {
@@ -314,15 +322,30 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...tx,
       id: `tx-${Date.now()}`,
     };
-    setTransactions((prev) => [newTx, ...prev]);
+    setTransactions((prev) => {
+      const updated = [newTx, ...prev];
+      persistToFirestore({ transactions: updated });
+      return updated;
+    });
 
-    // Apply financial adjustments
     if (tx.type === 'income') {
-      setBalance((prev) => prev + tx.amount);
+      setBalance((prev) => {
+        const newBal = prev + tx.amount;
+        if (uid) saveFinancials(uid, newBal, investments).catch(console.error);
+        return newBal;
+      });
     } else if (tx.type === 'expense') {
-      setBalance((prev) => prev - tx.amount);
+      setBalance((prev) => {
+        const newBal = prev - tx.amount;
+        if (uid) saveFinancials(uid, newBal, investments).catch(console.error);
+        return newBal;
+      });
     } else if (tx.type === 'investment') {
-      setInvestments((prev) => prev + tx.amount);
+      setInvestments((prev) => {
+        const newInv = prev + tx.amount;
+        if (uid) saveFinancials(uid, balance, newInv).catch(console.error);
+        return newInv;
+      });
     }
   };
 
@@ -331,30 +354,47 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const joinChallenge = (challenge: Challenge) => {
-    setChallenges((prev) => [...prev, challenge]);
+    setChallenges((prev) => {
+      const updated = [...prev, challenge];
+      persistToFirestore({ challenges: updated });
+      return updated;
+    });
   };
 
   const completeChallenge = (id: string) => {
-    setChallenges((prev) =>
-      prev.map((c) => {
-        if (c.id === id) {
-          if (!c.isCompleted) {
-            setStreakDays(s => s + 1);
-            setBadges(b => [...new Set([...b, 'Challenge Conqueror'])]);
-            return { ...c, isCompleted: true };
-          }
+    setChallenges((prev) => {
+      const updated = prev.map((c) => {
+        if (c.id === id && !c.isCompleted) {
+          setStreakDays(s => {
+            const next = s + 1;
+            if (uid) saveStreakAndBadges(uid, next, badges).catch(console.error);
+            return next;
+          });
+          setBadges(b => {
+            const next = [...new Set([...b, 'Challenge Conqueror'])];
+            if (uid) saveStreakAndBadges(uid, streakDays + 1, next).catch(console.error);
+            return next;
+          });
+          return { ...c, isCompleted: true };
         }
         return c;
-      })
-    );
+      });
+      persistToFirestore({ challenges: updated });
+      return updated;
+    });
   };
 
   const incrementStreak = () => {
     setStreakDays((prev) => {
       const next = prev + 1;
-      localStorage.setItem('finaura_streak', next.toString());
       if (next === 20) {
-        setBadges((prevBadges) => [...new Set([...prevBadges, 'Streak Master'])]);
+        setBadges((prevBadges) => {
+          const nextBadges = [...new Set([...prevBadges, 'Streak Master'])];
+          if (uid) saveStreakAndBadges(uid, next, nextBadges).catch(console.error);
+          return nextBadges;
+        });
+      } else {
+        if (uid) saveStreakAndBadges(uid, next, badges).catch(console.error);
       }
       return next;
     });
@@ -363,15 +403,15 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const resetAllData = () => {
     setBalance(245000);
     setInvestments(820000);
-    setTransactions(INITIAL_TRANSACTIONS);
-    setGoals(INITIAL_GOALS);
-    setChallenges(INITIAL_CHALLENGES);
+    setTransactions(FALLBACK_TRANSACTIONS);
+    setGoals(FALLBACK_GOALS);
+    setChallenges(FALLBACK_CHALLENGES);
     setStreakDays(18);
     setBadges(['Early Adopter', 'Obsidian Saver']);
-    localStorage.removeItem('finaura_transactions');
-    localStorage.removeItem('finaura_goals');
-    localStorage.removeItem('finaura_challenges');
-    localStorage.setItem('finaura_streak', '18');
+
+    if (uid) {
+      resetUserData(uid).catch(console.error);
+    }
   };
 
   return (
@@ -394,6 +434,7 @@ export const WealthProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         carbonScore,
         badges,
         geminiApiKey,
+        isDataLoading,
         setGeminiApiKey,
         addGoal,
         updateGoalAmount,
