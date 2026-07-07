@@ -69,15 +69,35 @@ export const DashboardView: React.FC = () => {
 
   const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6B7280'];
 
-  // 2. Data Prep for Income vs Expense Bar
-  const incomeVsExpenseData = [
-    { name: 'Jan', Income: 120000, Expense: 55000 },
-    { name: 'Feb', Income: 120000, Expense: 60000 },
-    { name: 'Mar', Income: 120000, Expense: 48000 },
-    { name: 'Apr', Income: 150000, Expense: 65000 },
-    { name: 'May', Income: 150000, Expense: 58000 },
-    { name: 'Jun', Income: 150000, Expense: monthlyExpenses },
-  ];
+  // 2. Data Prep for Income vs Expense Bar (dynamically aggregated)
+  const getHistoricalMonthlyData = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const now = new Date();
+    const data = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthLabel = months[d.getMonth()];
+      const yearVal = d.getFullYear();
+      const monthPrefix = `${yearVal}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      
+      const monthTx = transactions.filter(t => t.date && t.date.startsWith(monthPrefix));
+      
+      const monthIncome = monthTx.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+      const monthExpense = monthTx.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      const monthInvestment = monthTx.filter(t => t.type === 'investment').reduce((sum, t) => sum + t.amount, 0);
+
+      data.push({
+        name: monthLabel,
+        Income: monthIncome,
+        Expense: monthExpense + monthInvestment
+      });
+    }
+    
+    return data;
+  };
+
+  const incomeVsExpenseData = getHistoricalMonthlyData();
 
   // 3. Data Prep for Savings Trend
   const savingsTrendData = incomeVsExpenseData.map(d => ({
@@ -94,11 +114,12 @@ export const DashboardView: React.FC = () => {
   ];
 
   // 5. Data Prep for 10-Year Growth Forecast
-  // Future wealth: principal (netWorth) + periodic savings (40000/month) at rate r (12% vs 4%)
   const forecastData = [];
   let compoundWealthAdvisor = netWorth;
   let compoundWealthBasic = netWorth;
-  const annualSavings = 40000 * 12;
+  const monthlySalary = user ? user.annualIncome / 12 : 125000;
+  const dynamicMonthlySavings = monthlySavings > 0 ? monthlySavings : Math.max(0, monthlySalary - monthlyExpenses);
+  const annualSavings = dynamicMonthlySavings * 12;
 
   for (let year = 0; year <= 10; year++) {
     forecastData.push({
@@ -106,7 +127,6 @@ export const DashboardView: React.FC = () => {
       'FinAura Portfolio (12%)': Math.round(compoundWealthAdvisor),
       'Basic Savings Acc (4%)': Math.round(compoundWealthBasic),
     });
-    // Add savings and compound
     compoundWealthAdvisor = (compoundWealthAdvisor + annualSavings) * 1.12;
     compoundWealthBasic = (compoundWealthBasic + annualSavings) * 1.04;
   }
@@ -142,7 +162,7 @@ export const DashboardView: React.FC = () => {
             <Sparkles className="w-5 h-5 text-cyber-gold animate-pulse" />
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            FinAura wealth advisor aggregates your accounts. Your assets grew **4.2%** this week.
+            FinAura wealth advisor aggregates your accounts. Your portfolio is updated in real-time.
           </p>
         </div>
         <div className="flex gap-2 items-center flex-wrap">
@@ -182,8 +202,8 @@ export const DashboardView: React.FC = () => {
             <div className="w-8 h-8 rounded-lg bg-cyber-blue/10 flex items-center justify-center text-cyber-blue-light"><TrendingUp className="w-4 h-4" /></div>
           </div>
           <h3 className="text-2xl font-black text-white">Rs. {netWorth.toLocaleString('en-IN')}</h3>
-          <p className="text-[11px] text-cyber-green font-semibold mt-1 flex items-center gap-0.5">
-            <ArrowUpRight className="w-3 h-3" /> +12.4% vs last quarter
+          <p className="text-[11px] text-slate-400 mt-1">
+            Combined assets & investments
           </p>
         </motion.div>
 
@@ -206,8 +226,8 @@ export const DashboardView: React.FC = () => {
             <div className="w-8 h-8 rounded-lg bg-cyber-gold/10 flex items-center justify-center text-cyber-gold"><Compass className="w-4 h-4" /></div>
           </div>
           <h3 className="text-2xl font-black text-white">Rs. {investments.toLocaleString('en-IN')}</h3>
-          <p className="text-[11px] text-cyber-green font-semibold mt-1 flex items-center gap-0.5">
-            <ArrowUpRight className="w-3 h-3" /> Yielding ~12.2% CAGR
+          <p className="text-[11px] text-slate-400 mt-1">
+            Market-allocated assets
           </p>
         </motion.div>
 
@@ -218,8 +238,8 @@ export const DashboardView: React.FC = () => {
             <div className="w-8 h-8 rounded-lg bg-cyber-green/10 flex items-center justify-center text-cyber-green"><PiggyBank className="w-4 h-4" /></div>
           </div>
           <h3 className="text-2xl font-black text-white">Rs. {monthlySavings.toLocaleString('en-IN')}</h3>
-          <p className="text-[11px] text-cyber-green font-semibold mt-1 flex items-center gap-0.5">
-            Surplus Savings rate: {Math.round(monthlySavings / 150000 * 100)}%
+          <p className="text-[11px] text-cyber-green font-semibold mt-1">
+            Savings rate: {monthlySalary > 0 ? Math.round(Math.max(0, monthlySavings) / monthlySalary * 100) : 0}% of income
           </p>
         </motion.div>
 
@@ -230,8 +250,8 @@ export const DashboardView: React.FC = () => {
             <div className="w-8 h-8 rounded-lg bg-red-950/20 border border-red-500/10 flex items-center justify-center text-red-400"><ArrowDownRight className="w-4 h-4" /></div>
           </div>
           <h3 className="text-2xl font-black text-white">Rs. {monthlyExpenses.toLocaleString('en-IN')}</h3>
-          <p className="text-[11px] text-red-400 font-semibold mt-1 flex items-center gap-0.5">
-            <ArrowDownRight className="w-3 h-3" /> -12% vs last month
+          <p className="text-[11px] text-slate-400 mt-1">
+            Total monthly cash outflow
           </p>
         </motion.div>
 
